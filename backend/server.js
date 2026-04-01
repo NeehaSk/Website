@@ -15,7 +15,7 @@ require("dotenv").config()
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cors({
-    origin:"http://localhost:5173",
+    origin:"https://website-1-lqsf.onrender.com",
     credentials:true
 }))
 connectDB(app)
