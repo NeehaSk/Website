@@ -15,8 +15,8 @@ require("dotenv").config()
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cors({
-    origin:"https://website-1-lqsf.onrender.com",
-    credentials:true
+    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",") : ["http://localhost:5173"],
+    credentials: true
 }))
 connectDB(app)
 app.use(cookieParser())
