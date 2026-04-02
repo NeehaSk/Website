@@ -1,6 +1,11 @@
 import axios from 'axios'
+let apiBase = import.meta.env.VITE_API_URL || "http://localhost:2000/api"
+if (!apiBase.endsWith("/api")) {
+    apiBase = `${apiBase}/api`
+}
+
 const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:2000/api",
+    baseURL: apiBase,
     withCredentials: true
 })
 instance.interceptors.request.use((config)=>{
@@ -19,7 +24,7 @@ instance.interceptors.response.use(
         if(error.response.status==400 && !originalRequest._retry){
             originalRequest._retry=true 
             try{
-                await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:2000/api"}/refresh-token`,{},{
+                await axios.post(`${apiBase}/refresh-token`,{},{
                     withCredentials:true
                 })
                 .then((res)=>{

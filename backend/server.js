@@ -15,7 +15,7 @@ require("dotenv").config()
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cors({
-    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",") : ["http://localhost:5173"],
+    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map(url => url.trim()) : ["http://localhost:5173"],
     credentials: true
 }))
 connectDB(app)
