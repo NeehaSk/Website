@@ -1,45 +1,102 @@
-import axios from 'axios'
-let apiBase = import.meta.env.VITE_API_URL || "http://localhost:2000/api"
+// import axios from 'axios'
+// let apiBase = import.meta.env.VITE_API_URL || "http://localhost:2000/api"
+// if (!apiBase.endsWith("/api")) {
+//     apiBase = `${apiBase}/api`
+// }
+
+// const instance = axios.create({
+//     baseURL: apiBase,
+//     withCredentials: true
+// })
+// instance.interceptors.request.use((config)=>{
+//     const token= localStorage.getItem("token")
+//     console.log(token)
+//     if(token){
+//         config.headers.Authorization=`Bearer ${token}`
+//     }
+//     return config
+// })
+
+// instance.interceptors.response.use(
+//     res=>res,
+//     async error=>{
+//         const originalRequest = error.config
+//         if (error.response && error.response.status === 400 && !originalRequest._retry) {
+//             originalRequest._retry = true
+//             try {
+//                 await axios.post(`${apiBase}/refresh-token`,{},{
+//                     withCredentials:true
+//                 })
+//                 .then((res)=>{
+//                     localStorage.setItem("token",res.data.accessToken)
+//                     originalRequest.headers.Authorization=`Bearer ${res.data.accessToken}`
+//                     return instance(originalRequest)
+//                 })
+//             }
+//             catch(err){
+//                 localStorage.removeItem("token")
+//                 window.location.href="/login"
+//             }
+//         }
+//         return Promise.reject(error)
+//     }
+// )
+
+// export default instance
+import axios from "axios";
+
+let apiBase = import.meta.env.VITE_API_URL || "http://localhost:2000/api";
+
 if (!apiBase.endsWith("/api")) {
-    apiBase = `${apiBase}/api`
+  apiBase = `${apiBase}/api`;
 }
 
 const instance = axios.create({
-    baseURL: apiBase,
-    withCredentials: true
-})
-instance.interceptors.request.use((config)=>{
-    const token= localStorage.getItem("token")
-    console.log(token)
-    if(token){
-        config.headers.Authorization=`Bearer ${token}`
-    }
-    return config
-})
+  baseURL: apiBase,
+  withCredentials: true
+});
 
+// ✅ Attach token
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// ✅ FIXED (401 instead of 400)
 instance.interceptors.response.use(
-    res=>res,
-    async error=>{
-        const originalRequest = error.config
-        if (error.response && error.response.status === 400 && !originalRequest._retry) {
-            originalRequest._retry = true
-            try {
-                await axios.post(`${apiBase}/refresh-token`,{},{
-                    withCredentials:true
-                })
-                .then((res)=>{
-                    localStorage.setItem("token",res.data.accessToken)
-                    originalRequest.headers.Authorization=`Bearer ${res.data.accessToken}`
-                    return instance(originalRequest)
-                })
-            }
-            catch(err){
-                localStorage.removeItem("token")
-                window.location.href="/login"
-            }
-        }
-        return Promise.reject(error)
-    }
-)
+  (res) => res,
+  async (error) => {
+    const originalRequest = error.config;
 
-export default instance
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const res = await axios.post(
+          `${apiBase}/refresh-token`,
+          {},
+          { withCredentials: true }
+        );
+
+        localStorage.setItem("token", res.data.accessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
+        return instance(originalRequest);
+      } catch (err) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default instance;
