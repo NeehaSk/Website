@@ -20,10 +20,10 @@ instance.interceptors.request.use((config)=>{
 instance.interceptors.response.use(
     res=>res,
     async error=>{
-        const originalRequest= error.config 
-        if(error.response.status==400 && !originalRequest._retry){
-            originalRequest._retry=true 
-            try{
+        const originalRequest = error.config
+        if (error.response && error.response.status === 400 && !originalRequest._retry) {
+            originalRequest._retry = true
+            try {
                 await axios.post(`${apiBase}/refresh-token`,{},{
                     withCredentials:true
                 })
@@ -38,7 +38,7 @@ instance.interceptors.response.use(
                 window.location.href="/login"
             }
         }
-        return Promise(error)
+        return Promise.reject(error)
     }
 )
 
